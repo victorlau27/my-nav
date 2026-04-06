@@ -3,155 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的自定義導航</title>
-    <link rel="icon" href="https://img.icons8.com/fluency/48/star.png" type="image/png">
+    <title>我的雲端導航</title>
     <style>
         :root { --bg: #f4f7f9; --card: #ffffff; --primary: #007bff; --danger: #ff3b30; --edit: #ff9500; --text: #333; }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
         .container { max-width: 1000px; margin: 0 auto; }
-
-        /* 標題區域 */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }
-        #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; cursor: default; }
-        /* 編輯模式下的標題效果 */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; }
         .is-editing #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; cursor: pointer; }
-        .is-editing #mainTitle:hover { background: #ffe0b3; }
-
-        .edit-toggle { 
-            padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); 
-            color: var(--primary); font-size: 13px; font-weight: bold; cursor: pointer;
-            transition: 0.3s; background: white; white-space: nowrap; user-select: none;
-        }
-        .edit-toggle.on { background: var(--edit); border-color: var(--edit); color: white; box-shadow: 0 4px 12px rgba(255,149,0,0.2); }
-        .edit-toggle:active { transform: scale(0.95); }
-
-        /* 分頁列 */
+        .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-size: 13px; font-weight: bold; cursor: pointer; background: white; transition: 0.3s; }
+        .edit-toggle.on { background: var(--edit); border-color: var(--edit); color: white; }
         .tabs-wrapper { display: flex; align-items: center; gap: 5px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
         .tabs-container { display: flex; overflow-x: auto; flex-grow: 1; gap: 8px; scrollbar-width: none; }
         .tabs-container::-webkit-scrollbar { display: none; }
-        
-        .tab { 
-            position: relative; padding: 12px 20px; background: #e4e6eb; border-radius: 10px 10px 0 0; 
-            font-weight: 500; white-space: nowrap; cursor: pointer; transition: 0.3s;
-        }
+        .tab { position: relative; padding: 12px 20px; background: #e4e6eb; border-radius: 10px 10px 0 0; font-weight: 500; white-space: nowrap; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
         .tab.active { background: var(--primary); color: white; }
-        .tab .edit-btns { display: none; margin-left: 10px; gap: 8px; align-items: center; }
-        .is-editing .tab .edit-btns { display: inline-flex; }
-        
-        /* 圖標動力感回饋 */
-        .icon-btn { display: inline-block; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; font-size: 16px; }
+        .edit-btns { display: none; margin-left: 10px; gap: 8px; }
+        .is-editing .edit-btns { display: flex; }
+        .icon-btn { transition: 0.2s; cursor: pointer; font-size: 16px; }
         .icon-btn:hover { transform: scale(1.4) rotate(-10deg); }
-
-        /* 輸入面板 */
         .input-panel { background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 10px; flex-direction: column; }
         @media (min-width: 600px) { .input-panel { flex-direction: row; } }
-        
-        input, select, .btn-action { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
-        input:focus { border-color: var(--primary); }
-
-        /* 貼上按鈕樣式 */
-        .btn-paste { background: #f0f2f5; color: #555; font-weight: bold; cursor: pointer; transition: 0.2s; border: 1px solid #ccc; }
-        .btn-paste:hover { background: #e4e6eb; }
-        .btn-add { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; min-width: 80px; }
-
-        /* 網格內容 */
+        input, select, button { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+        .btn-paste { background: #f0f2f5; cursor: pointer; border: 1px solid #ccc; }
+        .btn-add { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
         .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-        .nav-item { 
-            background: var(--card); padding: 15px; border-radius: 12px; text-decoration: none; color: inherit;
-            display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            position: relative; transition: 0.2s;
-        }
-        .nav-item:active { transform: scale(0.96); }
+        .nav-item { background: var(--card); padding: 15px; border-radius: 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; transition: 0.2s; text-align: center; }
+        .nav-item:active { transform: scale(0.95); }
         .nav-item img { width: 44px; height: 44px; margin-bottom: 8px; border-radius: 8px; object-fit: contain; }
-        .nav-item span { font-size: 13px; text-align: center; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        
-        .del-link { 
-            position: absolute; top: -8px; right: -8px; background: var(--danger); color: white;
-            border: none; border-radius: 50%; width: 24px; height: 24px; display: none; z-index: 5;
-            justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .nav-item span { font-size: 13px; font-weight: 500; line-height: 1.2; height: 2.4em; overflow: hidden; }
+        .del-link { position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: none; z-index: 5; justify-content: center; align-items: center; cursor: pointer; }
         .is-editing .del-link { display: flex; }
+        #loading { text-align: center; padding: 20px; color: #666; }
     </style>
 </head>
 <body>
 
-<div class="container" id="mainWrapper">
+<div class="container" id="appBody">
     <div class="header">
-        <h2 id="mainTitle" onclick="changeTitle()">🚀 我的導航</h2>
-        <div class="edit-toggle" id="editBtn" onclick="toggleEditMode()">✎ 編輯模式：OFF</div>
+        <h2 id="mainTitle" onclick="changeAppTitle()">🚀 我的雲端導航</h2>
+        <div class="edit-toggle" id="editBtn" onclick="toggleEdit()">✎ 編輯模式：OFF</div>
     </div>
 
-    <div class="tabs-wrapper">
-        <div class="tabs-container" id="tabsBar"></div>
-        <button style="background:none; border:none; color:var(--primary); font-size:28px; cursor:pointer; padding:0 10px;" onclick="addCategory()">+</button>
-    </div>
+    <div id="loading">☁️ 正在連線雲端資料庫...</div>
 
-    <div class="input-panel">
-        <input type="text" id="siteName" placeholder="名稱 (例: Google)" style="flex: 1.5;">
-        <div style="display:flex; flex: 3; gap:5px;">
-            <input type="text" id="siteUrl" placeholder="網址" style="flex:1;">
-            <button class="btn-paste" onclick="doPaste()">📋 貼上</button>
+    <div id="mainContent" style="display:none;">
+        <div class="tabs-wrapper">
+            <div class="tabs-container" id="tabsBar"></div>
+            <button style="background:none; border:none; color:var(--primary); font-size:28px; cursor:pointer;" onclick="addCategory()">+</button>
         </div>
-        <select id="catSelect" style="flex: 1.2;"></select>
-        <button class="btn-add" onclick="addNewLink()">新增</button>
-    </div>
 
-    <div id="linksGrid" class="nav-grid"></div>
+        <div class="input-panel">
+            <input type="text" id="siteName" placeholder="名稱" style="flex: 1;">
+            <div style="display:flex; flex: 2; gap:5px;">
+                <input type="text" id="siteUrl" placeholder="網址" style="flex:1;">
+                <button class="btn-paste" onclick="doPaste()">📋 貼上</button>
+            </div>
+            <select id="catSelect" style="flex: 1;"></select>
+            <button class="btn-add" onclick="addNewLink()">新增</button>
+        </div>
+
+        <div id="linksGrid" class="nav-grid"></div>
+    </div>
 </div>
 
-<script>
-    // 初始化數據，增加 appTitle 欄位
-    let db = JSON.parse(localStorage.getItem('navApp_v4')) || {
-        appTitle: "🚀 我的導航",
-        categories: ["AI工具", "參考文章", "其他"],
-        links: [],
-        currentTab: "AI工具"
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA0umxGVtfZGAPf6COHsGReAl-W9MebprQ",
+        authDomain: "my-nav-10a8c.firebaseapp.com",
+        projectId: "my-nav-10a8c",
+        storageBucket: "my-nav-10a8c.firebasestorage.app",
+        messagingSenderId: "391640622471",
+        appId: "1:391640622471:web:a1f32c00a15a3c9fd6df22",
+        databaseURL: "https://my-nav-10a8c-default-rtdb.firebaseio.com"
     };
-    let editMode = false;
 
-    // 儲存並重新渲染
-    function refresh() {
-        localStorage.setItem('navApp_v4', JSON.stringify(db));
-        render();
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db, 'navData');
 
-    // 切換編輯模式
-    function toggleEditMode() {
-        editMode = !editMode;
-        document.getElementById('mainWrapper').classList.toggle('is-editing', editMode);
-        const btn = document.getElementById('editBtn');
-        btn.innerText = editMode ? "✎ 編輯模式：ON" : "✎ 編輯模式：OFF";
-        btn.classList.toggle('on', editMode);
-        render();
-    }
+    let localData = { appTitle: "🚀 我的雲端導航", categories: ["AI工具", "參考文章"], links: [], currentTab: "AI工具" };
+    let isEditMode = false;
 
-    // 修改主標題
-    function changeTitle() {
-        if (!editMode) return;
-        const nt = prompt("請輸入新的標題名稱：", db.appTitle);
-        if (nt) { db.appTitle = nt; refresh(); }
-    }
-
-    // 一鍵貼上功能 (由用戶點擊觸發，符合瀏覽器安全規範)
-    async function doPaste() {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('siteUrl').value = text;
-        } catch (err) {
-            alert("請在瀏覽器設定中允許此網頁存取剪貼簿。");
+    // 監聽雲端數據變化
+    onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            localData = data;
+            if (!localData.links) localData.links = [];
+        } else {
+            saveToCloud(); // 初始上傳
         }
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        render();
+    });
+
+    function saveToCloud() {
+        set(dbRef, localData);
     }
 
-    function render() {
-        // 更新標題
-        document.getElementById('mainTitle').innerText = db.appTitle || "🚀 我的導航";
+    window.toggleEdit = () => {
+        isEditMode = !isEditMode;
+        document.getElementById('appBody').classList.toggle('is-editing', isEditMode);
+        document.getElementById('editBtn').innerText = isEditMode ? "✎ 編輯模式：ON" : "✎ 編輯模式：OFF";
+        document.getElementById('editBtn').classList.toggle('on', isEditMode);
+        render();
+    };
 
-        // 更新分頁列
+    window.changeAppTitle = () => {
+        if (!isEditMode) return;
+        const nt = prompt("修改標題：", localData.appTitle);
+        if (nt) { localData.appTitle = nt; saveToCloud(); }
+    };
+
+    window.render = () => {
+        document.getElementById('mainTitle').innerText = localData.appTitle;
         const tabsBar = document.getElementById('tabsBar');
-        tabsBar.innerHTML = db.categories.map(cat => `
-            <div class="tab ${db.currentTab === cat ? 'active' : ''}" onclick="!editMode && switchTab('${cat}')">
+        tabsBar.innerHTML = localData.categories.map(cat => `
+            <div class="tab ${localData.currentTab === cat ? 'active' : ''}" onclick="!isEditMode && switchTab('${cat}')">
                 ${cat}
                 <div class="edit-btns">
                     <span class="icon-btn" onclick="event.stopPropagation(); renameCat('${cat}')">✏️</span>
@@ -160,69 +134,80 @@
             </div>
         `).join('');
 
-        // 更新下拉選單
-        document.getElementById('catSelect').innerHTML = db.categories.map(c => 
-            `<option value="${c}" ${db.currentTab === c ? 'selected' : ''}>${c}</option>`
-        ).join('');
+        document.getElementById('catSelect').innerHTML = localData.categories.map(c => `<option value="${c}" ${localData.currentTab === c ? 'selected' : ''}>${c}</option>`).join('');
 
-        // 更新網址內容
         const grid = document.getElementById('linksGrid');
-        const list = db.links.filter(l => l.category === db.currentTab);
-        grid.innerHTML = list.map(l => {
-            const realIdx = db.links.indexOf(l);
+        const currentLinks = localData.links.filter(l => l.category === localData.currentTab);
+        grid.innerHTML = currentLinks.map(l => {
+            const realIdx = localData.links.indexOf(l);
             return `
-            <div class="nav-item-wrapper" style="position:relative;">
-                <button class="del-link" onclick="removeLink(${realIdx})">✕</button>
-                <a href="${l.url}" target="_blank" class="nav-item">
-                    <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" onerror="this.src='https://img.icons8.com/fluency/48/globe.png'">
-                    <span>${l.name}</span>
-                </a>
-            </div>`;
+                <div style="position:relative;">
+                    <button class="del-link" onclick="removeLink(${realIdx})">✕</button>
+                    <a href="${l.url}" target="_blank" class="nav-item">
+                        <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" onerror="this.src='https://img.icons8.com/fluency/48/globe.png'">
+                        <span>${l.name}</span>
+                    </a>
+                </div>`;
         }).join('');
-    }
+    };
 
-    function switchTab(c) { db.currentTab = c; refresh(); }
+    window.switchTab = (c) => { localData.currentTab = c; render(); };
 
-    function addCategory() {
-        const n = prompt("請輸入新分類名稱：");
-        if (n && !db.categories.includes(n)) { db.categories.push(n); db.currentTab = n; refresh(); }
-    }
+    window.addCategory = () => {
+        const n = prompt("新分類名稱：");
+        if (n && !localData.categories.includes(n)) {
+            localData.categories.push(n);
+            localData.currentTab = n;
+            saveToCloud();
+        }
+    };
 
-    function renameCat(old) {
-        const n = prompt("重新命名分類：", old);
+    window.renameCat = (old) => {
+        const n = prompt("改名為：", old);
         if (n && n !== old) {
-            db.categories[db.categories.indexOf(old)] = n;
-            db.links.forEach(l => { if (l.category === old) l.category = n; });
-            db.currentTab = n;
-            refresh();
+            localData.categories[localData.categories.indexOf(old)] = n;
+            localData.links.forEach(l => { if (l.category === old) l.category = n; });
+            localData.currentTab = n;
+            saveToCloud();
         }
-    }
+    };
 
-    function removeCat(cat) {
-        if (confirm(`確定要刪除「${cat}」嗎？裡面的網址也會消失。`)) {
-            db.categories = db.categories.filter(c => c !== cat);
-            db.links = db.links.filter(l => l.category !== cat);
-            db.currentTab = db.categories[0] || "";
-            refresh();
+    window.removeCat = (cat) => {
+        if (confirm(`刪除「${cat}」？內容也會刪除。`)) {
+            localData.categories = localData.categories.filter(c => c !== cat);
+            localData.links = localData.links.filter(l => l.category !== cat);
+            localData.currentTab = localData.categories[0] || "";
+            saveToCloud();
         }
-    }
+    };
 
-    function addNewLink() {
-        const name = document.getElementById('siteName').value.trim();
-        let url = document.getElementById('siteUrl').value.trim();
+    window.addNewLink = () => {
+        const name = document.getElementById('siteName').value;
+        let url = document.getElementById('siteUrl').value;
         const cat = document.getElementById('catSelect').value;
         if (name && url) {
             if (!url.startsWith('http')) url = 'https://' + url;
-            db.links.push({ name, url, category: cat });
+            localData.links.push({ name, url, category: cat });
             document.getElementById('siteName').value = '';
             document.getElementById('siteUrl').value = '';
-            refresh();
-        } else { alert("請填寫名稱和網址"); }
-    }
+            saveToCloud();
+        }
+    };
 
-    function removeLink(i) { if (confirm("確定刪除此網址？")) { db.links.splice(i, 1); refresh(); } }
+    window.removeLink = (i) => {
+        if (confirm("刪除此網址？")) {
+            localData.links.splice(i, 1);
+            saveToCloud();
+        }
+    };
 
-    render();
+    window.doPaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('siteUrl').value = text;
+        } catch (e) { alert("請允許剪貼簿權限"); }
+    };
 </script>
+
 </body>
 </html>
