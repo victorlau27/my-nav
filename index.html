@@ -125,7 +125,7 @@
         document.getElementById('mainTitle').innerText = localData.appTitle;
         const tabsBar = document.getElementById('tabsBar');
         tabsBar.innerHTML = localData.categories.map(cat => `
-            <div class="tab ${localData.currentTab === cat ? 'active' : ''}" onclick="!isEditMode && switchTab('${cat}')">
+            <div class="tab ${localData.currentTab === cat ? 'active' : ''}" onclick="switchTab('${cat}')">
                 ${cat}
                 <div class="edit-btns">
                     <span class="icon-btn" onclick="event.stopPropagation(); renameCat('${cat}')">✏️</span>
