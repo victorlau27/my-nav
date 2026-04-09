@@ -3,62 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚀 Victor 雲端導航 | 終極修復版</title>
+    <title>🚀 Victor 雲端導航 | 手機消失終極修復版</title>
     <link rel="icon" href="https://img.icons8.com/fluency/48/rocket.png" type="image/png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/rocket.png">
+    
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
     <style>
-        :root { --bg: #f4f7f9; --card: #ffffff; --primary: #007bff; --danger: #ff3b30; --edit: #ff9500; --success: #28a745; --text: #333; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { 
+            --bg: #f4f7f9; --card: #ffffff; --primary: #007bff; --danger: #ff3b30; 
+            --edit: #ff9500; --success: #28a745; --text: #333; 
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); overflow-x: hidden; }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .edit-toggle { padding: 10px 20px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; transition: 0.2s; }
+        .edit-toggle { padding: 10px 20px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
         .edit-mode .edit-toggle { background: var(--primary); color: white; }
-        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding: 10px 0; min-height: 80px; }
-        .tab { padding: 12px 22px; background: #e0e6ed; border-radius: 12px; cursor: pointer; white-space: nowrap; font-weight: 500; border: 2px solid transparent; transition: 0.2s; position: relative; }
-        .tab.active { background: var(--primary); color: white; border-bottom: 4px solid rgba(0,0,0,0.2); }
-        .tab.drag-over { background: var(--success) !important; color: white !important; transform: scale(1.1); box-shadow: 0 5px 15px rgba(40,167,69,0.4); z-index: 100; }
+        
+        /* Tabs 分類欄 */
+        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding: 10px 0; min-height: 85px; }
+        .tab { padding: 12px 22px; background: #e0e6ed; border-radius: 12px; cursor: pointer; white-space: nowrap; font-weight: 500; border: 2px solid transparent; transition: all 0.2s; position: relative; }
+        .tab.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,123,255,0.2); }
+        
+        /* 跨區拖拽綠色高亮 */
+        .tab.drag-over { 
+            background: var(--success) !important; 
+            color: white !important; 
+            transform: scale(1.15) translateY(-5px); 
+            box-shadow: 0 10px 20px rgba(40,167,69,0.3);
+            border-color: white;
+            z-index: 9999;
+        }
+        
+        /* 編輯小按鈕 */
         .edit-btns { display: none; margin-left: 8px; font-size: 14px; }
         .edit-mode .edit-btns { display: inline-flex; gap: 5px; }
+
+        /* 新增區域 */
         .add-area { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; gap: 10px; }
-        .edit-mode .add-area { opacity: 0.2; pointer-events: none; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
-        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 12px; min-height: 200px; padding: 5px; }
-        .link-wrapper { position: relative; perspective: 1000px; }
-        .nav-item { background: var(--card); padding: 15px 10px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; transition: transform 0.2s; }
+        .edit-mode .add-area { opacity: 0.1; pointer-events: none; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; outline: none; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-add { flex: 1; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* 網址格子 */
+        .links-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+            gap: 15px; 
+            min-height: 250px; 
+            padding: 10px;
+            touch-action: none; /* 關鍵：防止手機拖動時網頁滾動 */
+        }
+        .edit-mode .links-grid { background: rgba(255,149,0,0.03); border: 2px dashed rgba(255,149,0,0.15); border-radius: 15px; }
+        
+        .link-wrapper { 
+            position: relative; 
+            /* 🚀 關鍵 1：強制硬件加速，防止手機圖標消失 */
+            transform: translate3d(0,0,0); 
+            -webkit-transform: translate3d(0,0,0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .nav-item { background: var(--card); padding: 15px 10px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; transition: all 0.2s; border: 1px solid transparent; }
+        .edit-mode .nav-item { cursor: grab; border: 1px solid var(--edit); }
         .nav-item img { width: 48px; height: 48px; margin-bottom: 8px; border-radius: 10px; pointer-events: none; }
-        .nav-item span { font-size: 13px; font-weight: 500; word-break: break-all; pointer-events: none; line-height: 1.2; }
-        .del-link, .edit-name-btn { position: absolute; width: 26px; height: 26px; border-radius: 50%; color: white; border: 2px solid white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.2); top: -8px; }
+        .nav-item span { font-size: 13px; font-weight: 500; pointer-events: none; word-break: break-all; line-height: 1.2; }
+        
+        /* 編輯小按鈕 */
+        .del-link, .edit-name-btn { position: absolute; width: 26px; height: 26px; border-radius: 50%; color: white; border: 2px solid white; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 100; top: -8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .del-link { right: -8px; background: var(--danger); }
         .edit-name-btn { left: -8px; background: var(--edit); font-size: 12px; }
         .edit-mode .del-link, .edit-mode .edit-name-btn { display: flex; }
-        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .sortable-ghost { opacity: 0.3; }
-        .sortable-drag { opacity: 0.9; transform: scale(1.05); }
+
+        /* 🚀 關鍵 2：拖拽中的影子與實體樣式 */
+        .sortable-ghost { opacity: 0; } /* 影子全透明 */
+        .sortable-drag { 
+            opacity: 1 !important; 
+            z-index: 9999 !important; 
+            transform: scale(1.15) rotate(3deg) !important; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important; 
+            cursor: grabbing !important;
+        }
+        
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; font-weight: bold; }
     </style>
 </head>
 <body>
-<div id="loading">🚀 正在加載數據...</div>
+
+<div id="loading">
+    <div style="font-size:40px; margin-bottom:10px;">🚀</div>
+    正在連線雲端資料庫...
+</div>
+
 <div class="container">
     <div class="header">
         <h2 id="mainTitle">Victor 雲端導航</h2>
         <button class="edit-toggle" onclick="toggleEdit()">✎ 編輯模式 : OFF</button>
     </div>
+
     <div class="tabs-container" id="tabsBar"></div>
+
     <div class="add-area">
         <input type="text" id="linkName" placeholder="名稱">
-        <div style="display:flex; gap:10px;">
+        <div class="btn-group">
             <input type="text" id="linkUrl" placeholder="網址 (https://...)">
-            <button onclick="pasteUrl()" style="padding:0 15px; border-radius:8px; border:1px solid #ddd;">貼上</button>
+            <button onclick="pasteUrl()" style="padding: 0 15px; border-radius:8px; border:1px solid #ddd;">貼上</button>
         </div>
         <select id="catSelect"></select>
-        <button class="btn-primary" onclick="addLink()" style="background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">新增網址</button>
+        <button class="btn-add" onclick="addLink()">新增網址</button>
     </div>
+
     <div class="links-grid" id="linksGrid"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
 <script>
     const firebaseConfig = { databaseURL: "https://my-nav-10a8c-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
@@ -66,21 +130,20 @@
 
     let localData = { appTitle: "Victor 雲端導航", categories: ["AI網站", "Prompt", "免費網店"], currentTab: "AI網站", links: [] };
     let isEditMode = false;
-    let isLoaded = false;
+    let isCloudLoaded = false;
 
-    // Firebase 數據同步
     db.on('value', (snapshot) => {
-        isLoaded = true;
-        const data = snapshot.val();
-        if (data) {
-            localData = data;
+        isCloudLoaded = true;
+        const val = snapshot.val();
+        if (val) {
+            localData = val;
             if (!localData.links) localData.links = [];
         }
         hideLoading();
     });
 
-    // 3秒超時機制：防止卡死在火箭畫面
-    setTimeout(() => { if (!isLoaded) hideLoading(); }, 3000);
+    // 防止超時卡死
+    setTimeout(() => { if(!isCloudLoaded) hideLoading(); }, 5000);
 
     function hideLoading() {
         document.getElementById('loading').style.display = 'none';
@@ -91,6 +154,9 @@
 
     function render() {
         document.body.className = isEditMode ? 'edit-mode' : '';
+        document.getElementById('mainTitle').innerText = localData.appTitle;
+        
+        // 分類標籤
         const tabsBar = document.getElementById('tabsBar');
         tabsBar.innerHTML = localData.categories.map(cat => `
             <div class="tab ${localData.currentTab === cat ? 'active' : ''}" data-id="${cat}" onclick="if(!isEditMode) switchTab('${cat}')">
@@ -102,65 +168,87 @@
             </div>
         `).join('') + (isEditMode ? `<div class="tab" onclick="addCat()">＋</div>` : '');
 
+        // 下拉選單
         document.getElementById('catSelect').innerHTML = localData.categories.map(c => `<option value="${c}" ${localData.currentTab === c ? 'selected' : ''}>${c}</option>`).join('');
 
+        // 網址格子
         const grid = document.getElementById('linksGrid');
         const currentLinks = localData.links.filter(l => l.category === localData.currentTab);
         grid.innerHTML = currentLinks.map(l => {
-            const realIdx = localData.links.indexOf(l);
+            const idx = localData.links.indexOf(l);
             return `
-                <div class="link-wrapper" data-idx="${realIdx}">
-                    <div class="del-link" onclick="removeLink(${realIdx})">✕</div>
-                    <div class="edit-name-btn" onclick="renameLink(${realIdx})">✎</div>
+                <div class="link-wrapper" data-idx="${idx}">
+                    <button class="del-link" onclick="removeLink(${idx})">✕</button>
+                    <button class="edit-name-btn" onclick="renameLink(${idx})">✎</button>
                     <a href="${l.url}" target="_blank" class="nav-item">
                         <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" onerror="this.src='https://img.icons8.com/fluency/48/globe.png'">
                         <span>${l.name}</span>
                     </a>
                 </div>`;
         }).join('');
+
         initSortable();
     }
 
+    // 🚀 關鍵 3：強化版 Sortable 配置
     function initSortable() {
         if (!isEditMode) return;
+
         new Sortable(document.getElementById('linksGrid'), {
             animation: 150,
-            delay: 100, // 手機防止誤觸
+            forceFallback: true, // 手機版關鍵：強制使用替代方案解決消失問題
+            fallbackOnBody: true,
+            delay: 100, // 防止誤觸滾動
             delayOnTouchOnly: true,
+            dragClass: "sortable-drag",
             onMove: (evt) => {
+                // 隱形偵測跨分類
                 evt.dragged.style.visibility = 'hidden';
-                const hit = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
-                const targetTab = hit ? hit.closest('.tab') : null;
+                let hit = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
+                let targetTab = hit ? hit.closest('.tab') : null;
                 evt.dragged.style.visibility = 'visible';
+
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over'));
-                if (targetTab) targetTab.classList.add('drag-over');
+                if (targetTab && targetTab.dataset.id) {
+                    targetTab.classList.add('drag-over');
+                }
             },
             onEnd: (evt) => {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over'));
+                
+                // 再次偵測放下位置
                 evt.item.style.visibility = 'hidden';
-                const hit = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
-                const targetTab = hit ? hit.closest('.tab') : null;
+                let hit = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
+                let targetTab = hit ? hit.closest('.tab') : null;
                 evt.item.style.visibility = 'visible';
 
-                if (targetTab && targetTab.dataset.id !== localData.currentTab) {
-                    localData.links[evt.item.dataset.idx].category = targetTab.dataset.id;
-                    localData.currentTab = targetTab.dataset.id;
+                const linkIdx = evt.item.dataset.idx;
+                const targetCat = targetTab ? targetTab.dataset.id : null;
+
+                if (targetCat && targetCat !== localData.currentTab) {
+                    // 執行搬家
+                    localData.links[linkIdx].category = targetCat;
+                    localData.currentTab = targetCat; // 自動跳轉
+                    saveData();
                 } else {
-                    const sorted = [];
+                    // 同分類排序
                     const others = localData.links.filter(l => l.category !== localData.currentTab);
-                    document.querySelectorAll('#linksGrid .link-wrapper').forEach(el => {
-                        sorted.push(localData.links[el.dataset.idx]);
+                    const current = [];
+                    document.querySelectorAll('.link-wrapper').forEach(el => {
+                        current.push(localData.links[el.dataset.idx]);
                     });
-                    localData.links = [...others, ...sorted];
+                    localData.links = [...others, ...current];
+                    saveData();
                 }
-                saveData();
-                render();
+                // 🚀 關鍵 4：拖拽結束後強制重新渲染，把可能消失的圖標抓回來
+                setTimeout(render, 50); 
             }
         });
 
+        // Tab 分類排序
         new Sortable(document.getElementById('tabsBar'), {
             animation: 150,
-            filter: '.edit-btns',
+            filter: '.edit-btns, .tab:last-child',
             onEnd: () => {
                 localData.categories = Array.from(document.querySelectorAll('.tab[data-id]')).map(el => el.dataset.id);
                 saveData();
@@ -168,41 +256,38 @@
         });
     }
 
+    // 各種功能函式
     window.toggleEdit = () => { isEditMode = !isEditMode; render(); };
     window.switchTab = (cat) => { localData.currentTab = cat; render(); };
     window.addLink = () => {
         const name = document.getElementById('linkName').value;
         const url = document.getElementById('linkUrl').value;
-        if (!name || !url) return alert("請填寫名稱和網址");
+        if (!name || !url) return alert("請填寫內容");
         localData.links.push({ name, url, category: document.getElementById('catSelect').value });
         saveData();
-        document.getElementById('linkName').value = '';
-        document.getElementById('linkUrl').value = '';
+        document.getElementById('linkName').value = ''; document.getElementById('linkUrl').value = '';
     };
-    window.removeLink = (idx) => { if(confirm("確定刪除？")) { localData.links.splice(idx, 1); saveData(); } };
+    window.removeLink = (idx) => { if(confirm("刪除？")) { localData.links.splice(idx, 1); saveData(); } };
     window.renameLink = (idx) => {
         const n = prompt("修改名稱：", localData.links[idx].name);
         if(n) { localData.links[idx].name = n; saveData(); }
     };
     window.addCat = () => { const n = prompt("新分類："); if(n) { localData.categories.push(n); saveData(); } };
-    window.renameCat = (old) => {
-        const n = prompt("改名：", old);
-        if(n) {
-            localData.categories = localData.categories.map(c => c === old ? n : c);
-            localData.links.forEach(l => { if(l.category === old) l.category = n; });
-            localData.currentTab = n;
-            saveData();
-        }
-    };
-    window.removeCat = (n) => { if(confirm("會刪除該分類下所有網址，確定？")) {
+    window.renameCat = (old) => { const n = prompt("改名：", old); if(n) { 
+        localData.categories = localData.categories.map(c => c === old ? n : c);
+        localData.links.forEach(l => { if(l.category === old) l.category = n; });
+        localData.currentTab = n;
+        saveData();
+    }};
+    window.removeCat = (n) => { if(confirm("會連網址一起刪除，確定？")) {
         localData.categories = localData.categories.filter(c => c !== n);
         localData.links = localData.links.filter(l => l.category !== n);
         localData.currentTab = localData.categories[0];
         saveData();
     }};
-    window.pasteUrl = async () => {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('linkUrl').value = text; }
-        catch(e) { alert("請手動貼上網址"); }
+    window.pasteUrl = async () => { 
+        try { const text = await navigator.clipboard.readText(); document.getElementById('linkUrl').value = text; } 
+        catch(e) { alert("請手動貼上"); }
     };
 </script>
 </body>
