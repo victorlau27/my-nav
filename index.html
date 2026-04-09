@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚀 Victor 雲端導航 | 你的專屬 AI 基地</title>
+    <title>🚀 Victor 雲端導航</title>
     <link rel="icon" href="https://img.icons8.com/fluency/48/rocket.png" type="image/png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/rocket.png">
     <style>
@@ -14,117 +14,92 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; }
         .is-editing #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; cursor: pointer; }
-        .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-size: 13px; font-weight: bold; cursor: pointer; background: white; transition: 0.3s; }
-        .edit-toggle.on { background: var(--edit); border-color: var(--edit); color: white; }
-        .tabs-wrapper { display: flex; align-items: center; gap: 5px; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
-        .tabs-container { display: flex; overflow-x: auto; flex-grow: 1; gap: 8px; scrollbar-width: none; }
-        .tabs-container::-webkit-scrollbar { display: none; }
-        .tab { position: relative; padding: 12px 20px; background: #e4e6eb; border-radius: 10px 10px 0 0; font-weight: 500; white-space: nowrap; cursor: pointer; transition: 0.3s; display: flex; align-items: center; }
+        .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
+        .edit-mode .edit-toggle { background: var(--primary); color: white; }
+        
+        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; transition: 0.2s; }
         .tab.active { background: var(--primary); color: white; }
-        .edit-btns { display: none; margin-left: 10px; gap: 8px; }
-        .is-editing .edit-btns { display: flex; }
-        .icon-btn { transition: 0.2s; cursor: pointer; font-size: 16px; }
-        .icon-btn:hover { transform: scale(1.4) rotate(-10deg); }
-        .input-panel { background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 10px; flex-direction: column; }
-        @media (min-width: 600px) { .input-panel { flex-direction: row; } }
-        input, select, button { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
-        .btn-paste { background: #f0f2f5; cursor: pointer; border: 1px solid #ccc; }
-        .btn-add { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
-        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
-        .nav-item { background: var(--card); padding: 15px; border-radius: 12px; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; transition: 0.2s; text-align: center; }
-        .nav-item:active { transform: scale(0.95); }
-        .nav-item img { width: 44px; height: 44px; margin-bottom: 8px; border-radius: 8px; object-fit: contain; }
-        .nav-item span { font-size: 13px; font-weight: 500; line-height: 1.2; height: 2.4em; overflow: hidden; }
-        .del-link { position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: none; z-index: 5; justify-content: center; align-items: center; cursor: pointer; }
-        .is-editing .del-link { display: flex; }
-        #loading { text-align: center; padding: 20px; color: #666; }
+        .edit-btns { display: none; margin-left: 8px; }
+        .edit-mode .edit-btns { display: inline-flex; gap: 5px; }
+        .icon-btn { cursor: pointer; font-size: 14px; padding: 2px; }
+
+        .add-area { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; gap: 10px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-add { flex: 1; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-paste { background: #f0f0f0; border: 1px solid #ddd; padding: 0 15px; border-radius: 8px; cursor: pointer; }
+
+        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        .nav-item { background: var(--card); padding: 15px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; }
+        .nav-item span { font-size: 14px; font-weight: 500; word-break: break-all; }
+        
+        .del-link, .edit-link-name { position: absolute; top: -5px; width: 22px; height: 22px; border-radius: 50%; border: none; color: white; cursor: pointer; z-index: 10; font-size: 12px; display: none; align-items: center; justify-content: center; }
+        .del-link { right: -5px; background: var(--danger); }
+        .edit-link-name { left: -5px; background: var(--edit); }
+        .edit-mode .del-link, .edit-mode .edit-link-name { display: flex; }
+
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 999; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container" id="appBody">
+<div id="loading">☁️ 正在連線雲端資料庫...</div>
+
+<div class="container">
     <div class="header">
-        <h2 id="mainTitle" onclick="changeAppTitle()">🚀 我的雲端導航</h2>
-        <div class="edit-toggle" id="editBtn" onclick="toggleEdit()">✎ 編輯模式：OFF</div>
+        <h2 id="mainTitle" onclick="renameApp()">我的雲端導航</h2>
+        <button class="edit-toggle" onclick="toggleEdit()">✎ 編輯模式 : OFF</button>
     </div>
 
-    <div id="loading">☁️ 正在連線雲端資料庫...</div>
+    <div class="tabs-container" id="tabsBar"></div>
 
-    <div id="mainContent" style="display:none;">
-        <div class="tabs-wrapper">
-            <div class="tabs-container" id="tabsBar"></div>
-            <button style="background:none; border:none; color:var(--primary); font-size:28px; cursor:pointer;" onclick="addCategory()">+</button>
+    <div class="add-area">
+        <input type="text" id="linkName" placeholder="名稱">
+        <div class="btn-group">
+            <input type="text" id="linkUrl" placeholder="網址">
+            <button class="btn-paste" onclick="pasteUrl()">📋 貼上</button>
         </div>
-
-        <div class="input-panel">
-            <input type="text" id="siteName" placeholder="名稱" style="flex: 1;">
-            <div style="display:flex; flex: 2; gap:5px;">
-                <input type="text" id="siteUrl" placeholder="網址" style="flex:1;">
-                <button class="btn-paste" onclick="doPaste()">📋 貼上</button>
-            </div>
-            <select id="catSelect" style="flex: 1;"></select>
-            <button class="btn-add" onclick="addNewLink()">新增</button>
-        </div>
-
-        <div id="linksGrid" class="nav-grid"></div>
+        <select id="catSelect"></select>
+        <button class="btn-add" onclick="addLink()">新增</button>
     </div>
+
+    <div class="links-grid" id="linksGrid"></div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
+<script>
+    // 請確認這裡的配置與你的 Firebase Console 一致
     const firebaseConfig = {
-        apiKey: "AIzaSyA0umxGVtfZGAPf6COHsGReAl-W9MebprQ",
-        authDomain: "my-nav-10a8c.firebaseapp.com",
-        projectId: "my-nav-10a8c",
-        storageBucket: "my-nav-10a8c.firebasestorage.app",
-        messagingSenderId: "391640622471",
-        appId: "1:391640622471:web:a1f32c00a15a3c9fd6df22",
         databaseURL: "https://my-nav-10a8c-default-rtdb.firebaseio.com"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database().ref('navData');
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const dbRef = ref(db, 'navData');
-
-    let localData = { appTitle: "🚀 我的雲端導航", categories: ["AI工具", "參考文章"], links: [], currentTab: "AI工具" };
+    let localData = { appTitle: "我的雲端導航", categories: ["AI工具", "參考文章"], currentTab: "AI工具", links: [] };
     let isEditMode = false;
 
-    // 監聽雲端數據變化
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            localData = data;
-            if (!localData.links) localData.links = [];
-        } else {
-            saveToCloud(); // 初始上傳
+    db.on('value', (snapshot) => {
+        const cloudData = snapshot.val();
+        if (cloudData) {
+            localData = cloudData;
+            if (!localData.currentTab) localData.currentTab = localData.categories[0];
         }
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
         render();
     });
 
-    function saveToCloud() {
-        set(dbRef, localData);
+    function saveData() {
+        db.set(localData);
     }
 
-    window.toggleEdit = () => {
-        isEditMode = !isEditMode;
-        document.getElementById('appBody').classList.toggle('is-editing', isEditMode);
-        document.getElementById('editBtn').innerText = isEditMode ? "✎ 編輯模式：ON" : "✎ 編輯模式：OFF";
-        document.getElementById('editBtn').classList.toggle('on', isEditMode);
-        render();
-    };
-
-    window.changeAppTitle = () => {
-        if (!isEditMode) return;
-        const nt = prompt("修改標題：", localData.appTitle);
-        if (nt) { localData.appTitle = nt; saveToCloud(); }
-    };
-
     window.render = () => {
+        document.body.className = isEditMode ? 'edit-mode' : '';
         document.getElementById('mainTitle').innerText = localData.appTitle;
+        
         const tabsBar = document.getElementById('tabsBar');
         tabsBar.innerHTML = localData.categories.map(cat => `
             <div class="tab ${localData.currentTab === cat ? 'active' : ''}" onclick="switchTab('${cat}')">
@@ -134,17 +109,22 @@
                     <span class="icon-btn" style="color:var(--danger);" onclick="event.stopPropagation(); removeCat('${cat}')">🗑️</span>
                 </div>
             </div>
-        `).join('');
+        `).join('') + `<div class="tab" onclick="addCat()" style="background:none; border:2px dashed #ccc; color:#666;">＋</div>`;
 
-        document.getElementById('catSelect').innerHTML = localData.categories.map(c => `<option value="${c}" ${localData.currentTab === c ? 'selected' : ''}>${c}</option>`).join('');
+        document.getElementById('catSelect').innerHTML = localData.categories.map(c => 
+            `<option value="${c}" ${localData.currentTab === c ? 'selected' : ''}>${c}</option>`
+        ).join('');
 
         const grid = document.getElementById('linksGrid');
-        const currentLinks = localData.links.filter(l => l.category === localData.currentTab);
+        const allLinks = localData.links || [];
+        const currentLinks = allLinks.filter(l => l.category === localData.currentTab);
+        
         grid.innerHTML = currentLinks.map(l => {
-            const realIdx = localData.links.indexOf(l);
+            const realIdx = allLinks.indexOf(l);
             return `
                 <div style="position:relative;">
                     <button class="del-link" onclick="removeLink(${realIdx})">✕</button>
+                    <button class="edit-link-name" onclick="renameLink(${realIdx})">✎</button>
                     <a href="${l.url}" target="_blank" class="nav-item">
                         <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" onerror="this.src='https://img.icons8.com/fluency/48/globe.png'">
                         <span>${l.name}</span>
@@ -153,61 +133,78 @@
         }).join('');
     };
 
-    window.switchTab = (c) => { localData.currentTab = c; render(); };
+    window.toggleEdit = () => {
+        isEditMode = !isEditMode;
+        document.querySelector('.edit-toggle').innerText = isEditMode ? '✎ 編輯模式 : ON' : '✎ 編輯模式 : OFF';
+        render();
+    };
 
-    window.addCategory = () => {
-        const n = prompt("新分類名稱：");
-        if (n && !localData.categories.includes(n)) {
-            localData.categories.push(n);
-            localData.currentTab = n;
-            saveToCloud();
+    window.switchTab = (cat) => {
+        localData.currentTab = cat;
+        render();
+    };
+
+    window.addLink = () => {
+        const name = document.getElementById('linkName').value;
+        const url = document.getElementById('linkUrl').value;
+        const category = document.getElementById('catSelect').value;
+        if (!name || !url) return alert("請填寫名稱和網址");
+        if (!localData.links) localData.links = [];
+        localData.links.push({ name, url, category });
+        saveData();
+        document.getElementById('linkName').value = '';
+        document.getElementById('linkUrl').value = '';
+    };
+
+    window.removeLink = (idx) => { if (confirm("確定刪除？")) { localData.links.splice(idx, 1); saveData(); } };
+    
+    window.renameLink = (idx) => {
+        const newName = prompt("請輸入新的網址名稱：", localData.links[idx].name);
+        if (newName) { localData.links[idx].name = newName; saveData(); }
+    };
+
+    window.addCat = () => {
+        const name = prompt("新增分類名稱：");
+        if (name && !localData.categories.includes(name)) {
+            localData.categories.push(name);
+            localData.currentTab = name;
+            saveData();
         }
     };
 
-    window.renameCat = (old) => {
-        const n = prompt("改名為：", old);
-        if (n && n !== old) {
-            localData.categories[localData.categories.indexOf(old)] = n;
-            localData.links.forEach(l => { if (l.category === old) l.category = n; });
-            localData.currentTab = n;
-            saveToCloud();
+    window.renameCat = (oldName) => {
+        const newName = prompt("改名為：", oldName);
+        if (newName && newName !== oldName) {
+            localData.categories = localData.categories.map(c => c === oldName ? newName : c);
+            if (localData.links) localData.links.forEach(l => { if (l.category === oldName) l.category = newName; });
+            localData.currentTab = newName;
+            saveData();
         }
     };
 
-    window.removeCat = (cat) => {
-        if (confirm(`刪除「${cat}」？內容也會刪除。`)) {
-            localData.categories = localData.categories.filter(c => c !== cat);
-            localData.links = localData.links.filter(l => l.category !== cat);
-            localData.currentTab = localData.categories[0] || "";
-            saveToCloud();
+    window.removeCat = (name) => {
+        if (localData.categories.length <= 1) return alert("最少要有一個分類");
+        if (confirm(`確定刪除「${name}」？該分類下的網址也會被刪除。`)) {
+            localData.categories = localData.categories.filter(c => c !== name);
+            if (localData.links) localData.links = localData.links.filter(l => l.category !== name);
+            localData.currentTab = localData.categories[0];
+            saveData();
         }
     };
 
-    window.addNewLink = () => {
-        const name = document.getElementById('siteName').value;
-        let url = document.getElementById('siteUrl').value;
-        const cat = document.getElementById('catSelect').value;
-        if (name && url) {
-            if (!url.startsWith('http')) url = 'https://' + url;
-            localData.links.push({ name, url, category: cat });
-            document.getElementById('siteName').value = '';
-            document.getElementById('siteUrl').value = '';
-            saveToCloud();
-        }
+    window.renameApp = () => {
+        if (!isEditMode) return;
+        const newTitle = prompt("修改導航標題：", localData.appTitle);
+        if (newTitle) { localData.appTitle = newTitle; saveData(); }
     };
 
-    window.removeLink = (i) => {
-        if (confirm("刪除此網址？")) {
-            localData.links.splice(i, 1);
-            saveToCloud();
-        }
-    };
-
-    window.doPaste = async () => {
+    window.pasteUrl = async () => {
         try {
             const text = await navigator.clipboard.readText();
-            document.getElementById('siteUrl').value = text;
-        } catch (e) { alert("請允許剪貼簿權限"); }
+            document.getElementById('linkUrl').value = text;
+        } catch (err) {
+            alert("請允許剪貼簿權限或手動貼上");
+        }
     };
 </script>
 
