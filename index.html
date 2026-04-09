@@ -235,4 +235,87 @@
                     const otherLinks = localData.links.filter(l => l.category !== localData.currentTab);
                     const thisCatLinks = [];
                     document.querySelectorAll('.link-wrapper').forEach(el => {
-                        const idx = el.getAttribute
+                        const idx = el.getAttribute('data-idx');
+                        thisCatLinks.push(localData.links[idx]);
+                    });
+                    localData.links = [...otherLinks, ...thisCatLinks];
+                    saveData();
+                }
+            }
+        });
+    }
+
+    // 各種功能函式
+    window.toggleEdit = () => {
+        isEditMode = !isEditMode;
+        document.querySelector('.edit-toggle').innerText = isEditMode ? '✎ 編輯模式 : ON' : '✎ 編輯模式 : OFF';
+        render();
+    };
+
+    window.switchTab = (cat) => { localData.currentTab = cat; render(); };
+
+    window.addLink = () => {
+        const name = document.getElementById('linkName').value;
+        const url = document.getElementById('linkUrl').value;
+        const category = document.getElementById('catSelect').value;
+        if (!name || !url) return alert("請填寫名稱和網址");
+        localData.links.push({ name, url, category });
+        saveData();
+        document.getElementById('linkName').value = '';
+        document.getElementById('linkUrl').value = '';
+    };
+
+    window.removeLink = (idx) => { if (confirm("確定刪除？")) { localData.links.splice(idx, 1); saveData(); } };
+    
+    window.renameLink = (idx) => {
+        const newName = prompt("新名稱：", localData.links[idx].name);
+        if (newName) { localData.links[idx].name = newName; saveData(); }
+    };
+
+    window.addCat = () => {
+        const name = prompt("新分類名稱：");
+        if (name && !localData.categories.includes(name)) {
+            localData.categories.push(name);
+            saveData();
+        }
+    };
+
+    window.renameCat = (oldName) => {
+        const newName = prompt("改名為：", oldName);
+        if (newName && newName !== oldName) {
+            localData.categories = localData.categories.map(c => c === oldName ? newName : c);
+            localData.links.forEach(l => { if (l.category === oldName) l.category = newName; });
+            localData.currentTab = newName;
+            saveData();
+        }
+    };
+
+    window.removeCat = (name) => {
+        if (localData.categories.length <= 1) return alert("最少要有一個分類");
+        if (confirm(`確定刪除「${name}」？`)) {
+            localData.categories = localData.categories.filter(c => c !== name);
+            localData.links = localData.links.filter(l => l.category !== name);
+            localData.currentTab = localData.categories[0];
+            saveData();
+        }
+    };
+
+    window.renameApp = () => {
+        if (!isEditMode) return;
+        const newTitle = prompt("修改標題：", localData.appTitle);
+        if (newTitle) { localData.appTitle = newTitle; saveData(); }
+    };
+
+    window.pasteUrl = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text.startsWith('http')) {
+                document.getElementById('linkUrl').value = text;
+            } else {
+                alert("剪貼簿內容似乎不是網址");
+            }
+        } catch (err) { alert("請手動貼上網址"); }
+    };
+</script>
+</body>
+</html>
