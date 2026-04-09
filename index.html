@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🚀 Victor 雲端導航 | 穩定不消失版</title>
+    <title>🚀 Victor 雲端導航 | 佈局修復版</title>
     <link rel="icon" href="https://img.icons8.com/fluency/48/rocket.png" type="image/png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/144/rocket.png">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root { --bg: #f4f7f9; --card: #ffffff; --primary: #007bff; --danger: #ff3b30; --edit: #ff9500; --text: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
-        /* 防止拖拽時網頁亂跳 */
-        body.dragging { overflow: hidden !important; position: fixed; width: 100%; }
+        
+        /* 🚀 修復滾動：移除 fixed 定位，確保手機可以正常向下滑動 */
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 15px; 
+            color: var(--text);
+            min-height: 100vh;
+            overflow-y: auto !important; 
+        }
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .edit-toggle { padding: 10px 20px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
@@ -30,10 +38,18 @@
         .edit-mode .add-area { opacity: 0.1; pointer-events: none; }
         input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
 
-        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; min-height: 200px; padding: 10px; }
-        .link-wrapper { position: relative; touch-action: none; -webkit-user-select: none; }
+        /* 🚀 網格修復：讓內容自動撐開高度 */
+        .links-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); 
+            gap: 15px; 
+            padding-bottom: 100px; /* 底部預留空間方便滾動 */
+        }
         
-        .nav-item { background: var(--card); padding: 15px 5px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; transition: transform 0.1s; }
+        .link-wrapper { position: relative; touch-action: auto; }
+        .edit-mode .link-wrapper { touch-action: none; } /* 僅在編輯模式鎖定觸控用於移動 */
+        
+        .nav-item { background: var(--card); padding: 15px 5px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; }
         .nav-item img { width: 44px; height: 44px; margin-bottom: 8px; border-radius: 10px; pointer-events: none; }
         .nav-item span { font-size: 12px; font-weight: 600; word-break: break-all; pointer-events: none; }
         
@@ -42,15 +58,14 @@
         .edit-name-btn { left: -8px; background: var(--edit); font-size: 12px; }
         .edit-mode .del-link, .edit-mode .edit-name-btn { display: flex; }
 
-        /* 🚀 關鍵修復：拖拽中的樣式，不使用任何透明度，確保可見 */
         .sortable-drag { opacity: 1 !important; background: var(--card) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important; border: 2px solid var(--primary) !important; z-index: 9999 !important; }
-        .sortable-ghost { opacity: 0.2 !important; }
+        .sortable-ghost { opacity: 0.3 !important; }
         
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 9999; }
     </style>
 </head>
 <body>
-<div id="loading">🚀 資料同步中...</div>
+<div id="loading">🚀 數據同步中...</div>
 <div class="container">
     <div class="header">
         <h2 id="mainTitle">Victor 雲端導航</h2>
@@ -78,7 +93,14 @@
 
     db.on('value', (s) => {
         const d = s.val();
-        if (d) { localData = d; if (!localData.links) localData.links = []; }
+        if (d) { 
+            localData = d; 
+            if (!localData.links) localData.links = [];
+            // 確保分類存在
+            if (localData.categories.length > 0 && !localData.categories.includes(localData.currentTab)) {
+                localData.currentTab = localData.categories[0];
+            }
+        }
         document.getElementById('loading').style.display = 'none';
         render();
     });
@@ -98,6 +120,7 @@
 
         const grid = document.getElementById('linksGrid');
         const currentLinks = localData.links.filter(l => l.category === localData.currentTab);
+        
         grid.innerHTML = currentLinks.map(l => {
             const idx = localData.links.indexOf(l);
             return `
@@ -117,10 +140,10 @@
         if (!isEditMode) return;
         new Sortable(document.getElementById('linksGrid'), {
             animation: 150,
-            delay: 150, // 手機長按感
+            delay: 150,
             delayOnTouchOnly: true,
-            forceFallback: true, // 核心：不使用瀏覽器原生拖拽，自建圖層
-            onStart: () => document.body.classList.add('dragging'),
+            forceFallback: true,
+            fallbackClass: "sortable-drag",
             onMove: (evt) => {
                 const hit = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
                 const targetTab = hit ? hit.closest('.tab') : null;
@@ -128,9 +151,7 @@
                 if (targetTab) targetTab.classList.add('drag-over');
             },
             onEnd: (evt) => {
-                document.body.classList.remove('dragging');
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over'));
-                
                 const hit = document.elementFromPoint(evt.originalEvent.clientX, evt.originalEvent.clientY);
                 const targetTab = hit ? hit.closest('.tab') : null;
 
@@ -144,7 +165,7 @@
                     localData.links = [...others, ...sorted];
                 }
                 saveData();
-                setTimeout(render, 50); // 強制刷新
+                setTimeout(render, 50);
             }
         });
     }
@@ -154,7 +175,7 @@
     window.addLink = () => {
         const name = document.getElementById('linkName').value;
         const url = document.getElementById('linkUrl').value;
-        if (!name || !url) return alert("請填寫");
+        if (!name || !url) return alert("請填寫名稱和網址");
         localData.links.push({ name, url, category: document.getElementById('catSelect').value });
         saveData();
         document.getElementById('linkName').value = ''; document.getElementById('linkUrl').value = '';
@@ -174,7 +195,7 @@
             saveData();
         }
     };
-    window.removeCat = (n) => { if(confirm("確定？")) {
+    window.removeCat = (n) => { if(confirm("確定刪除？")) {
         localData.categories = localData.categories.filter(c => c !== n);
         localData.links = localData.links.filter(l => l.category !== n);
         localData.currentTab = localData.categories[0];
