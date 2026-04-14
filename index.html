@@ -15,7 +15,6 @@
             font-family: -apple-system, system-ui, sans-serif; 
             background: var(--bg); 
             margin: 0; padding: 15px; color: var(--text); 
-            /* 防止手機端長按彈出選單的核心 CSS */
             -webkit-touch-callout: none; 
             -webkit-user-select: none;
             user-select: none;
@@ -26,7 +25,7 @@
         #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; }
         .edit-mode #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; }
         
-        .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
+        .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; min-width: 130px; text-align: center; }
         .edit-mode .edit-toggle { background: var(--primary); color: white; }
         
         .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
@@ -47,7 +46,7 @@
         
         .link-wrapper { 
             position: relative; 
-            touch-action: none; /* 重要：防止瀏覽器攔截觸摸事件 */
+            touch-action: none;
         }
         
         .nav-item { 
@@ -64,7 +63,6 @@
             height: 100%;
         }
 
-        /* 編輯模式下，讓 A 標籤失效，防止點擊跳轉或彈出選單 */
         .edit-mode .nav-item { pointer-events: none; }
 
         .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; pointer-events: none; }
@@ -74,7 +72,7 @@
             position: absolute; top: -5px; width: 26px; height: 26px; border-radius: 50%; 
             border: 2px solid white; color: white; cursor: pointer; z-index: 100; 
             display: none; align-items: center; justify-content: center; 
-            pointer-events: auto; /* 確保按鈕在編輯模式下仍可點擊 */
+            pointer-events: auto;
         }
         .del-link { right: -5px; background: var(--danger); }
         .edit-link-name { left: -5px; background: var(--edit); font-size: 12px; }
@@ -93,7 +91,7 @@
 <div class="container">
     <div class="header">
         <h2 id="mainTitle" onclick="renameApp()">我的雲端導航</h2>
-        <button class="edit-toggle" onclick="toggleEdit()">✎ 編輯模式 : OFF</button>
+        <button id="editToggleBtn" class="edit-toggle" onclick="toggleEdit()">✎ 編輯模式 : OFF</button>
     </div>
     <div class="tabs-container" id="tabsBar"></div>
     <div class="add-area">
@@ -132,6 +130,10 @@
     window.render = () => {
         document.body.className = isEditMode ? 'edit-mode' : '';
         document.getElementById('mainTitle').innerText = localData.appTitle;
+        
+        // 更新編輯按鈕文字
+        document.getElementById('editToggleBtn').innerText = isEditMode ? '✎ 編輯模式 : ON' : '✎ 編輯模式 : OFF';
+
         const tabsBar = document.getElementById('tabsBar');
         tabsBar.innerHTML = localData.categories.map(cat => `
             <div class="tab ${localData.currentTab === cat ? 'active' : ''}" data-id="${cat}" onclick="if(!isEditMode) switchTab('${cat}')">
@@ -183,9 +185,9 @@
 
         sortableGrid = new Sortable(document.getElementById('linksGrid'), {
             animation: 150,
-            delay: 180, // 手機端偵測時間
+            delay: 180,
             delayOnTouchOnly: true,
-            forceFallback: true, // 強制模擬拖拽，避免觸發原生 A 標籤事件
+            forceFallback: true,
             fallbackClass: "sortable-drag",
             onEnd: () => {
                 const newOrderLinks = [];
@@ -195,7 +197,7 @@
                 });
                 localData.links = [...otherCategoryLinks, ...newOrderLinks];
                 saveData();
-                render(); // 重新整理索引
+                render();
             }
         });
     }
