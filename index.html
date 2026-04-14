@@ -18,10 +18,9 @@
         .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
         .edit-mode .edit-toggle { background: var(--primary); color: white; }
         
-        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
         .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; transition: 0.2s; border: 2px solid transparent; }
         .tab.active { background: var(--primary); color: white; }
-        /* 編輯模式下標籤抖動效果提示可移動 */
         .edit-mode .tab[data-id] { border: 1px dashed #999; }
         
         .edit-btns { display: none; margin-left: 8px; }
@@ -29,7 +28,7 @@
         .icon-btn { cursor: pointer; font-size: 14px; padding: 2px; }
 
         .add-area { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; gap: 10px; }
-        .edit-mode .add-area { display: none; } /* 編輯模式隱藏新增區，方便排序 */
+        .edit-mode .add-area { display: none; } 
         
         input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
         .btn-group { display: flex; gap: 10px; }
@@ -37,19 +36,18 @@
         .btn-paste { background: #f0f0f0; border: 1px solid #ddd; padding: 0 15px; border-radius: 8px; cursor: pointer; }
 
         .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; min-height: 100px; }
-        .link-wrapper { position: relative; }
-        .nav-item { background: var(--card); padding: 15px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; }
-        .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; pointer-events: none; }
+        .link-wrapper { position: relative; touch-action: none; } /* 重要：禁止手機默認觸控行為 */
+        .nav-item { background: var(--card); padding: 15px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; -webkit-user-drag: none; }
+        .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; pointer-events: none; -webkit-user-drag: none; }
         .nav-item span { font-size: 14px; font-weight: 500; word-break: break-all; pointer-events: none; }
         
-        .del-link, .edit-link-name { position: absolute; top: -5px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; color: white; cursor: pointer; z-index: 10; font-size: 12px; display: none; align-items: center; justify-content: center; }
+        .del-link, .edit-link-name { position: absolute; top: -5px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; color: white; cursor: pointer; z-index: 100; font-size: 12px; display: none; align-items: center; justify-content: center; }
         .del-link { right: -5px; background: var(--danger); }
         .edit-link-name { left: -5px; background: var(--edit); }
         .edit-mode .del-link, .edit-mode .edit-link-name { display: flex; }
 
-        /* 拖拽中的樣式 */
-        .sortable-ghost { opacity: 0.3; }
-        .sortable-drag { background: white !important; box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important; }
+        .sortable-ghost { opacity: 0.1; }
+        .sortable-drag { background: white !important; box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important; border: 2px solid var(--primary) !important; opacity: 1 !important; }
 
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 999; font-weight: bold; }
     </style>
@@ -63,9 +61,7 @@
         <h2 id="mainTitle" onclick="renameApp()">我的雲端導航</h2>
         <button class="edit-toggle" onclick="toggleEdit()">✎ 編輯模式 : OFF</button>
     </div>
-
     <div class="tabs-container" id="tabsBar"></div>
-
     <div class="add-area">
         <input type="text" id="linkName" placeholder="名稱">
         <div class="btn-group">
@@ -75,7 +71,6 @@
         <select id="catSelect"></select>
         <button class="btn-add" onclick="addLink()">新增</button>
     </div>
-
     <div class="links-grid" id="linksGrid"></div>
 </div>
 
@@ -107,7 +102,6 @@
     window.render = () => {
         document.body.className = isEditMode ? 'edit-mode' : '';
         document.getElementById('mainTitle').innerText = localData.appTitle;
-        
         const tabsBar = document.getElementById('tabsBar');
         tabsBar.innerHTML = localData.categories.map(cat => `
             <div class="tab ${localData.currentTab === cat ? 'active' : ''}" data-id="${cat}" onclick="if(!isEditMode) switchTab('${cat}')">
@@ -125,7 +119,6 @@
 
         const grid = document.getElementById('linksGrid');
         const currentLinks = localData.links.filter(l => l.category === localData.currentTab);
-        
         grid.innerHTML = currentLinks.map(l => {
             const realIdx = localData.links.indexOf(l);
             return `
@@ -133,26 +126,26 @@
                     <button class="del-link" onclick="removeLink(${realIdx})">✕</button>
                     <button class="edit-link-name" onclick="renameLink(${realIdx})">✎</button>
                     <a href="${l.url}" target="_blank" class="nav-item">
-                        <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" onerror="this.src='https://img.icons8.com/fluency/48/globe.png'">
+                        <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" draggable="false">
                         <span>${l.name}</span>
                     </a>
                 </div>`;
         }).join('');
-
         initSortable();
     };
 
     function initSortable() {
-        if (!isEditMode) {
-            if (sortableTabs) sortableTabs.destroy();
-            if (sortableGrid) sortableGrid.destroy();
-            return;
-        }
+        if (sortableTabs) sortableTabs.destroy();
+        if (sortableGrid) sortableGrid.destroy();
+        if (!isEditMode) return;
 
-        // 分類排序
+        // 分類排序 (針對手機端優化)
         sortableTabs = new Sortable(document.getElementById('tabsBar'), {
             animation: 150,
-            filter: '#addCatBtn', // 不允許拖動「＋」按鈕
+            delay: 200, // 手機端需要長按一下才開始拖，防止滑動分頁時誤觸
+            delayOnTouchOnly: true,
+            forceFallback: true, // 核心修復：不使用原生拖放
+            filter: '#addCatBtn',
             onEnd: () => {
                 const newCats = Array.from(document.querySelectorAll('.tab[data-id]')).map(el => el.dataset.id);
                 localData.categories = newCats;
@@ -160,55 +153,39 @@
             }
         });
 
-        // 圖標排序
+        // 圖標排序 (針對手機端優化)
         sortableGrid = new Sortable(document.getElementById('linksGrid'), {
             animation: 150,
-            delay: 150, // 手機端長按 150ms 後觸發拖拽，防止誤觸
+            delay: 300, // 手機端建議 300ms 長按觸發拖拽
             delayOnTouchOnly: true,
+            forceFallback: true, // 核心修復：強制使用 JavaScript 模擬拖拽
+            fallbackOnBody: true,
             onEnd: () => {
                 const newOrderLinks = [];
                 const otherCategoryLinks = localData.links.filter(l => l.category !== localData.currentTab);
-                
-                // 根據 DOM 順序重新排列當前分類的網址
                 document.querySelectorAll('.link-wrapper').forEach(el => {
                     newOrderLinks.push(localData.links[el.dataset.idx]);
                 });
-
                 localData.links = [...otherCategoryLinks, ...newOrderLinks];
                 saveData();
             }
         });
     }
 
-    window.toggleEdit = () => {
-        isEditMode = !isEditMode;
-        document.querySelector('.edit-toggle').innerText = isEditMode ? '✎ 編輯模式 : ON' : '✎ 編輯模式 : OFF';
-        render();
-    };
-
-    window.switchTab = (cat) => {
-        localData.currentTab = cat;
-        render();
-    };
-
+    window.toggleEdit = () => { isEditMode = !isEditMode; render(); };
+    window.switchTab = (cat) => { localData.currentTab = cat; render(); };
     window.addLink = () => {
-        const name = document.getElementById('linkName').value;
-        const url = document.getElementById('linkUrl').value;
-        const category = document.getElementById('catSelect').value;
-        if (!name || !url) return alert("請填寫名稱和網址");
-        localData.links.push({ name, url, category });
+        const name = document.getElementById('linkName').value, url = document.getElementById('linkUrl').value;
+        if (!name || !url) return alert("請填寫");
+        localData.links.push({ name, url, category: document.getElementById('catSelect').value });
         saveData();
-        document.getElementById('linkName').value = '';
-        document.getElementById('linkUrl').value = '';
+        document.getElementById('linkName').value = ''; document.getElementById('linkUrl').value = '';
     };
-
     window.removeLink = (idx) => { if (confirm("確定刪除？")) { localData.links.splice(idx, 1); saveData(); } };
-    
     window.renameLink = (idx) => {
-        const newName = prompt("請輸入新的網址名稱：", localData.links[idx].name);
+        const newName = prompt("新名稱：", localData.links[idx].name);
         if (newName) { localData.links[idx].name = newName; saveData(); }
     };
-
     window.addCat = () => {
         const name = prompt("新增分類名稱：");
         if (name && !localData.categories.includes(name)) {
@@ -217,7 +194,6 @@
             saveData();
         }
     };
-
     window.renameCat = (oldName) => {
         const newName = prompt("改名為：", oldName);
         if (newName && newName !== oldName) {
@@ -227,32 +203,24 @@
             saveData();
         }
     };
-
     window.removeCat = (name) => {
         if (localData.categories.length <= 1) return alert("最少要有一個分類");
-        if (confirm(`確定刪除「${name}」？該分類下的網址也會被刪除。`)) {
+        if (confirm(`確定刪除「${name}」？`)) {
             localData.categories = localData.categories.filter(c => c !== name);
             localData.links = localData.links.filter(l => l.category !== name);
             localData.currentTab = localData.categories[0];
             saveData();
         }
     };
-
     window.renameApp = () => {
         if (!isEditMode) return;
-        const newTitle = prompt("修改導航標題：", localData.appTitle);
+        const newTitle = prompt("修改標題：", localData.appTitle);
         if (newTitle) { localData.appTitle = newTitle; saveData(); }
     };
-
     window.pasteUrl = async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('linkUrl').value = text;
-        } catch (err) {
-            alert("請允許剪貼簿權限或手動貼上");
-        }
+        try { const text = await navigator.clipboard.readText(); document.getElementById('linkUrl').value = text; }
+        catch (err) { alert("請手動貼上"); }
     };
 </script>
-
 </body>
 </html>
