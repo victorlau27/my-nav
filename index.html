@@ -10,44 +10,78 @@
     <style>
         :root { --bg: #f4f7f9; --card: #ffffff; --primary: #007bff; --danger: #ff3b30; --edit: #ff9500; --text: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); }
+        
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); 
+            margin: 0; padding: 15px; color: var(--text); 
+            /* 防止手機端長按彈出選單的核心 CSS */
+            -webkit-touch-callout: none; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
         .container { max-width: 1000px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; }
-        .edit-mode #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; cursor: pointer; }
+        .edit-mode #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; }
+        
         .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
         .edit-mode .edit-toggle { background: var(--primary); color: white; }
         
-        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; transition: 0.2s; border: 2px solid transparent; }
+        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; border: 2px solid transparent; }
         .tab.active { background: var(--primary); color: white; }
         .edit-mode .tab[data-id] { border: 1px dashed #999; }
         
         .edit-btns { display: none; margin-left: 8px; }
         .edit-mode .edit-btns { display: inline-flex; gap: 5px; }
-        .icon-btn { cursor: pointer; font-size: 14px; padding: 2px; }
 
         .add-area { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; gap: 10px; }
         .edit-mode .add-area { display: none; } 
         
         input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
-        .btn-group { display: flex; gap: 10px; }
-        .btn-add { flex: 1; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-paste { background: #f0f0f0; border: 1px solid #ddd; padding: 0 15px; border-radius: 8px; cursor: pointer; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; min-height: 100px; }
-        .link-wrapper { position: relative; touch-action: none; } /* 重要：禁止手機默認觸控行為 */
-        .nav-item { background: var(--card); padding: 15px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; -webkit-user-drag: none; }
-        .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; pointer-events: none; -webkit-user-drag: none; }
+        
+        .link-wrapper { 
+            position: relative; 
+            touch-action: none; /* 重要：防止瀏覽器攔截觸摸事件 */
+        }
+        
+        .nav-item { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 15px; 
+            text-decoration: none; 
+            color: var(--text); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+            height: 100%;
+        }
+
+        /* 編輯模式下，讓 A 標籤失效，防止點擊跳轉或彈出選單 */
+        .edit-mode .nav-item { pointer-events: none; }
+
+        .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; pointer-events: none; }
         .nav-item span { font-size: 14px; font-weight: 500; word-break: break-all; pointer-events: none; }
         
-        .del-link, .edit-link-name { position: absolute; top: -5px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; color: white; cursor: pointer; z-index: 100; font-size: 12px; display: none; align-items: center; justify-content: center; }
+        .del-link, .edit-link-name { 
+            position: absolute; top: -5px; width: 26px; height: 26px; border-radius: 50%; 
+            border: 2px solid white; color: white; cursor: pointer; z-index: 100; 
+            display: none; align-items: center; justify-content: center; 
+            pointer-events: auto; /* 確保按鈕在編輯模式下仍可點擊 */
+        }
         .del-link { right: -5px; background: var(--danger); }
-        .edit-link-name { left: -5px; background: var(--edit); }
+        .edit-link-name { left: -5px; background: var(--edit); font-size: 12px; }
         .edit-mode .del-link, .edit-mode .edit-link-name { display: flex; }
 
-        .sortable-ghost { opacity: 0.1; }
-        .sortable-drag { background: white !important; box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important; border: 2px solid var(--primary) !important; opacity: 1 !important; }
+        .sortable-ghost { opacity: 0; }
+        .sortable-drag { background: white !important; box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important; border: 2px solid var(--primary) !important; z-index: 1000; }
 
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 999; font-weight: bold; }
     </style>
@@ -64,10 +98,7 @@
     <div class="tabs-container" id="tabsBar"></div>
     <div class="add-area">
         <input type="text" id="linkName" placeholder="名稱">
-        <div class="btn-group">
-            <input type="text" id="linkUrl" placeholder="網址">
-            <button class="btn-paste" onclick="pasteUrl()">📋 貼上</button>
-        </div>
+        <input type="text" id="linkUrl" placeholder="網址 (https://...)">
         <select id="catSelect"></select>
         <button class="btn-add" onclick="addLink()">新增</button>
     </div>
@@ -82,7 +113,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database().ref('navData');
 
-    let localData = { appTitle: "我的雲端導航", categories: ["AI工具", "參考文章"], currentTab: "AI工具", links: [] };
+    let localData = { appTitle: "我的雲端導航", categories: ["AI工具"], currentTab: "AI工具", links: [] };
     let isEditMode = false;
     let sortableTabs, sortableGrid;
 
@@ -91,7 +122,6 @@
         if (cloudData) {
             localData = cloudData;
             if (!localData.links) localData.links = [];
-            if (!localData.currentTab) localData.currentTab = localData.categories[0];
         }
         document.getElementById('loading').style.display = 'none';
         render();
@@ -123,8 +153,8 @@
             const realIdx = localData.links.indexOf(l);
             return `
                 <div class="link-wrapper" data-idx="${realIdx}">
-                    <button class="del-link" onclick="removeLink(${realIdx})">✕</button>
-                    <button class="edit-link-name" onclick="renameLink(${realIdx})">✎</button>
+                    <div class="del-link" onclick="removeLink(${realIdx})">✕</div>
+                    <div class="edit-link-name" onclick="renameLink(${realIdx})">✎</div>
                     <a href="${l.url}" target="_blank" class="nav-item">
                         <img src="https://www.google.com/s2/favicons?domain=${l.url}&sz=128" draggable="false">
                         <span>${l.name}</span>
@@ -139,27 +169,24 @@
         if (sortableGrid) sortableGrid.destroy();
         if (!isEditMode) return;
 
-        // 分類排序 (針對手機端優化)
         sortableTabs = new Sortable(document.getElementById('tabsBar'), {
             animation: 150,
-            delay: 200, // 手機端需要長按一下才開始拖，防止滑動分頁時誤觸
+            delay: 150,
             delayOnTouchOnly: true,
-            forceFallback: true, // 核心修復：不使用原生拖放
+            forceFallback: true,
             filter: '#addCatBtn',
             onEnd: () => {
-                const newCats = Array.from(document.querySelectorAll('.tab[data-id]')).map(el => el.dataset.id);
-                localData.categories = newCats;
+                localData.categories = Array.from(document.querySelectorAll('.tab[data-id]')).map(el => el.dataset.id);
                 saveData();
             }
         });
 
-        // 圖標排序 (針對手機端優化)
         sortableGrid = new Sortable(document.getElementById('linksGrid'), {
             animation: 150,
-            delay: 300, // 手機端建議 300ms 長按觸發拖拽
+            delay: 180, // 手機端偵測時間
             delayOnTouchOnly: true,
-            forceFallback: true, // 核心修復：強制使用 JavaScript 模擬拖拽
-            fallbackOnBody: true,
+            forceFallback: true, // 強制模擬拖拽，避免觸發原生 A 標籤事件
+            fallbackClass: "sortable-drag",
             onEnd: () => {
                 const newOrderLinks = [];
                 const otherCategoryLinks = localData.links.filter(l => l.category !== localData.currentTab);
@@ -168,6 +195,7 @@
                 });
                 localData.links = [...otherCategoryLinks, ...newOrderLinks];
                 saveData();
+                render(); // 重新整理索引
             }
         });
     }
@@ -176,7 +204,7 @@
     window.switchTab = (cat) => { localData.currentTab = cat; render(); };
     window.addLink = () => {
         const name = document.getElementById('linkName').value, url = document.getElementById('linkUrl').value;
-        if (!name || !url) return alert("請填寫");
+        if (!name || !url) return;
         localData.links.push({ name, url, category: document.getElementById('catSelect').value });
         saveData();
         document.getElementById('linkName').value = ''; document.getElementById('linkUrl').value = '';
@@ -188,38 +216,28 @@
     };
     window.addCat = () => {
         const name = prompt("新增分類名稱：");
-        if (name && !localData.categories.includes(name)) {
-            localData.categories.push(name);
-            localData.currentTab = name;
-            saveData();
-        }
+        if (name) { localData.categories.push(name); localData.currentTab = name; saveData(); }
     };
     window.renameCat = (oldName) => {
         const newName = prompt("改名為：", oldName);
         if (newName && newName !== oldName) {
             localData.categories = localData.categories.map(c => c === oldName ? newName : c);
             localData.links.forEach(l => { if (l.category === oldName) l.category = newName; });
-            localData.currentTab = newName;
-            saveData();
+            localData.currentTab = newName; saveData();
         }
     };
     window.removeCat = (name) => {
-        if (localData.categories.length <= 1) return alert("最少要有一個分類");
+        if (localData.categories.length <= 1) return;
         if (confirm(`確定刪除「${name}」？`)) {
             localData.categories = localData.categories.filter(c => c !== name);
             localData.links = localData.links.filter(l => l.category !== name);
-            localData.currentTab = localData.categories[0];
-            saveData();
+            localData.currentTab = localData.categories[0]; saveData();
         }
     };
     window.renameApp = () => {
         if (!isEditMode) return;
         const newTitle = prompt("修改標題：", localData.appTitle);
         if (newTitle) { localData.appTitle = newTitle; saveData(); }
-    };
-    window.pasteUrl = async () => {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('linkUrl').value = text; }
-        catch (err) { alert("請手動貼上"); }
     };
 </script>
 </body>
