@@ -10,28 +10,22 @@
     <style>
         :root { --bg: #f4f7f9; --card: #ffffff; --primary: #007bff; --danger: #ff3b30; --edit: #ff9500; --text: #333; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
         body { 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background: var(--bg); 
-            margin: 0; padding: 15px; color: var(--text); 
-            /* 防止手機端長按彈出選單的核心 CSS */
-            -webkit-touch-callout: none; 
-            -webkit-user-select: none;
-            user-select: none;
+            font-family: -apple-system, system-ui, sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); 
+            -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
         }
-
         .container { max-width: 1000px; margin: 0 auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; }
         .edit-mode #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; }
-        
         .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; }
         .edit-mode .edit-toggle { background: var(--primary); color: white; }
         
-        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; border: 2px solid transparent; }
+        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; border: 2px solid transparent; transition: 0.2s; }
         .tab.active { background: var(--primary); color: white; }
+        /* 跨分類接收時的視覺效果 */
+        .tab.sortable-chosen { background: #cce5ff; border: 2px dashed var(--primary); }
         .edit-mode .tab[data-id] { border: 1px dashed #999; }
         
         .edit-btns { display: none; margin-left: 8px; }
@@ -39,50 +33,25 @@
 
         .add-area { background: var(--card); padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; display: grid; gap: 10px; }
         .edit-mode .add-area { display: none; } 
-        
         input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; width: 100%; }
         .btn-add { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; min-height: 100px; }
+        .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; min-height: 120px; border-radius: 15px; padding: 10px; }
+        .edit-mode .links-grid { border: 2px dashed #ddd; background: rgba(255,255,255,0.5); }
         
-        .link-wrapper { 
-            position: relative; 
-            touch-action: none; /* 重要：防止瀏覽器攔截觸摸事件 */
-        }
-        
-        .nav-item { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 15px; 
-            text-decoration: none; 
-            color: var(--text); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            text-align: center; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
-            height: 100%;
-        }
-
-        /* 編輯模式下，讓 A 標籤失效，防止點擊跳轉或彈出選單 */
+        .link-wrapper { position: relative; touch-action: none; }
+        .nav-item { background: var(--card); padding: 15px; border-radius: 15px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: 100%; }
         .edit-mode .nav-item { pointer-events: none; }
-
         .nav-item img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 10px; pointer-events: none; }
         .nav-item span { font-size: 14px; font-weight: 500; word-break: break-all; pointer-events: none; }
         
-        .del-link, .edit-link-name { 
-            position: absolute; top: -5px; width: 26px; height: 26px; border-radius: 50%; 
-            border: 2px solid white; color: white; cursor: pointer; z-index: 100; 
-            display: none; align-items: center; justify-content: center; 
-            pointer-events: auto; /* 確保按鈕在編輯模式下仍可點擊 */
-        }
+        .del-link, .edit-link-name { position: absolute; top: -5px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid white; color: white; cursor: pointer; z-index: 100; display: none; align-items: center; justify-content: center; pointer-events: auto; }
         .del-link { right: -5px; background: var(--danger); }
         .edit-link-name { left: -5px; background: var(--edit); font-size: 12px; }
         .edit-mode .del-link, .edit-mode .edit-link-name { display: flex; }
 
-        .sortable-ghost { opacity: 0; }
+        .sortable-ghost { opacity: 0.3; transform: scale(0.8); }
         .sortable-drag { background: white !important; box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important; border: 2px solid var(--primary) !important; z-index: 1000; }
-
         #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 999; font-weight: bold; }
     </style>
 </head>
@@ -133,6 +102,7 @@
         document.body.className = isEditMode ? 'edit-mode' : '';
         document.getElementById('mainTitle').innerText = localData.appTitle;
         const tabsBar = document.getElementById('tabsBar');
+        
         tabsBar.innerHTML = localData.categories.map(cat => `
             <div class="tab ${localData.currentTab === cat ? 'active' : ''}" data-id="${cat}" onclick="if(!isEditMode) switchTab('${cat}')">
                 ${cat}
@@ -152,7 +122,7 @@
         grid.innerHTML = currentLinks.map(l => {
             const realIdx = localData.links.indexOf(l);
             return `
-                <div class="link-wrapper" data-idx="${realIdx}">
+                <div class="link-wrapper" data-idx="${realIdx}" data-url="${l.url}" data-name="${l.name}">
                     <div class="del-link" onclick="removeLink(${realIdx})">✕</div>
                     <div class="edit-link-name" onclick="renameLink(${realIdx})">✎</div>
                     <a href="${l.url}" target="_blank" class="nav-item">
@@ -169,33 +139,52 @@
         if (sortableGrid) sortableGrid.destroy();
         if (!isEditMode) return;
 
+        // 1. 分類標籤排序 + 接收跨分類拖拽
         sortableTabs = new Sortable(document.getElementById('tabsBar'), {
+            group: 'shared', // 核心：與圖標網格共用群組
             animation: 150,
             delay: 150,
             delayOnTouchOnly: true,
             forceFallback: true,
             filter: '#addCatBtn',
-            onEnd: () => {
-                localData.categories = Array.from(document.querySelectorAll('.tab[data-id]')).map(el => el.dataset.id);
-                saveData();
+            onAdd: (evt) => {
+                // 當圖標被拖到某個分類標籤上時觸發
+                const targetCat = evt.to.children[evt.newIndex].dataset.id;
+                const linkIdx = evt.item.dataset.idx;
+                if (targetCat && linkIdx !== undefined) {
+                    localData.links[linkIdx].category = targetCat;
+                    localData.currentTab = targetCat; // 自動跳轉到目標分類
+                    saveData();
+                }
+            },
+            onEnd: (evt) => {
+                // 正常的分類排序
+                if (evt.from === evt.to) {
+                    localData.categories = Array.from(document.querySelectorAll('.tab[data-id]')).map(el => el.dataset.id);
+                    saveData();
+                }
             }
         });
 
+        // 2. 圖標網格排序 + 跨分類發送
         sortableGrid = new Sortable(document.getElementById('linksGrid'), {
+            group: 'shared', // 核心：與分類標籤共用群組
             animation: 150,
-            delay: 180, // 手機端偵測時間
+            delay: 180,
             delayOnTouchOnly: true,
-            forceFallback: true, // 強制模擬拖拽，避免觸發原生 A 標籤事件
+            forceFallback: true,
             fallbackClass: "sortable-drag",
-            onEnd: () => {
-                const newOrderLinks = [];
-                const otherCategoryLinks = localData.links.filter(l => l.category !== localData.currentTab);
-                document.querySelectorAll('.link-wrapper').forEach(el => {
-                    newOrderLinks.push(localData.links[el.dataset.idx]);
-                });
-                localData.links = [...otherCategoryLinks, ...newOrderLinks];
-                saveData();
-                render(); // 重新整理索引
+            onEnd: (evt) => {
+                // 如果是同分類內的排序
+                if (evt.to === evt.from) {
+                    const newOrderLinks = [];
+                    const otherCategoryLinks = localData.links.filter(l => l.category !== localData.currentTab);
+                    document.querySelectorAll('.link-wrapper').forEach(el => {
+                        newOrderLinks.push(localData.links[el.dataset.idx]);
+                    });
+                    localData.links = [...otherCategoryLinks, ...newOrderLinks];
+                    saveData();
+                }
             }
         });
     }
