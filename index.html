@@ -15,12 +15,12 @@
             font-family: -apple-system, system-ui, sans-serif; 
             background: var(--bg); 
             margin: 0; padding: 15px; color: var(--text); 
-            -webkit-touch-callout: none; 
-            -webkit-user-select: none;
-            user-select: none;
+            /* 移除 body 的禁止選擇，改為局部控制 */
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
         }
 
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; padding-bottom: 50px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         #mainTitle { margin: 0; font-size: 1.5rem; padding: 5px 10px; border-radius: 8px; transition: 0.3s; }
         .edit-mode #mainTitle { border: 2px dashed var(--edit); background: #fff5e6; }
@@ -28,7 +28,7 @@
         .edit-toggle { padding: 8px 18px; border-radius: 25px; border: 2px solid var(--primary); color: var(--primary); font-weight: bold; cursor: pointer; background: white; min-width: 130px; text-align: center; }
         .edit-mode .edit-toggle { background: var(--primary); color: white; }
         
-        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tabs-container { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
         .tab { padding: 10px 20px; background: #e0e6ed; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 500; position: relative; border: 2px solid transparent; }
         .tab.active { background: var(--primary); color: white; }
         .edit-mode .tab[data-id] { border: 1px dashed #999; }
@@ -46,7 +46,10 @@
         
         .link-wrapper { 
             position: relative; 
-            touch-action: none;
+            /* 修正：允許垂直滑動頁面，但不觸發系統長按選單 */
+            touch-action: pan-y; 
+            -webkit-touch-callout: none;
+            user-select: none;
         }
         
         .nav-item { 
@@ -130,8 +133,6 @@
     window.render = () => {
         document.body.className = isEditMode ? 'edit-mode' : '';
         document.getElementById('mainTitle').innerText = localData.appTitle;
-        
-        // 更新編輯按鈕文字
         document.getElementById('editToggleBtn').innerText = isEditMode ? '✎ 編輯模式 : ON' : '✎ 編輯模式 : OFF';
 
         const tabsBar = document.getElementById('tabsBar');
